@@ -1,16 +1,29 @@
 # Author: Wilson Neira
-# Evaluating the Decision Tree Algorithm
+
 import pandas as pd
-import numpy as np
 import sklearn
 from sklearn.model_selection import train_test_split
 import decision_tree_copy
-""" Random Forest (RF) Algorithm Begins Here"""
 
 
 class RandomForest:
+    """
+    A class for implementing the Random Forest algorithm.
 
+    Attributes:
+    C_labels (list): The class labels.
+    criteria (str): The criteria to split the tree.
+    simple (bool): Indicates if the tree is simple.
+    WeakLearn (function): The weak learning algorithm.
+    ntree (int): Number of trees in the forest.
+    F (float): The fraction of input samples for bootstrap sample.
+    kNN (bool): Indicates if k-nearest neighbours is used.
+    kNNk (int): Number of neighbours for k-nearest neighbours.
+    """
     def __init__(self, S_data_train, C_labels, criteria, simple, WeakLearn, ntree, F, kNN, kNNk):
+        """
+        Constructor to initialize training data, labels, and other parameters.
+        """
         self.C_labels = C_labels
         self.criteria = criteria
         self.simple = simple
@@ -25,6 +38,16 @@ class RandomForest:
         self.ensemble = self.build_forest(S_data_train, C_y)
 
     def build_forest(self, S, C):
+        """
+        Build the Random Forest.
+
+        Args:
+        S (DataFrame): The input samples.
+        C (DataFrame): The class labels.
+
+        Returns:
+        list: List of decision trees.
+        """
         ensemble = []
         for t in range(self.ntree):
             bootstrap, oob = self.create_bootstrap(S, C)
@@ -43,6 +66,16 @@ class RandomForest:
         return ensemble
 
     def create_bootstrap(self, S, C):
+        """
+        Create bootstrap sample.
+
+        Args:
+        S (DataFrame): The input samples.
+        C (DataFrame): The class labels.
+
+        Returns:
+        tuple: The bootstrap sample and the out-of-bag sample.
+        """
         x_train_set, x_test, y_train_set, y_test = train_test_split(S, C, test_size=1 - self.F)
 
         x_bootstrap, x_unused, y_bootstrap, y_unused = train_test_split(x_train_set, y_train_set,
@@ -51,6 +84,15 @@ class RandomForest:
             sklearn.utils.shuffle(x_test).reset_index(drop=True)
 
     def test(self, x):
+        """
+        Test the model on the test data and make predictions.
+
+        Args:
+        x (DataFrame): The test data.
+
+        Returns:
+        list: List of predicted labels for the test data.
+        """
         # out of bag is used to select the best trees only
         out_of_bag_copy = self.out_of_bag.copy()
         ensemble_copy = self.ensemble.copy()

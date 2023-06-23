@@ -1,11 +1,10 @@
 # Author: Wilson Neira
 # Evaluating Classifiers
-from sklearn.compose import ColumnTransformer
+
+# Import necessary libraries and modules
+import matplotlib.pyplot as plt
 from random_forest import *
 from stratified_cross_validation import *
-from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.preprocessing import OneHotEncoder
-from sklearn import datasets
 from decision_tree_copy import *
 
 
@@ -13,17 +12,18 @@ import pandas as pd
 import numpy as np
 
 
-def transform_labels(df):
-    for i, column_name in enumerate(df.columns):
-        column = df[column_name]
-        if pd.api.types.is_numeric_dtype(column):
-            df.rename(columns={column_name: str(i)}, inplace=True)
-        else:
-            df.rename(columns={column_name: column_name}, inplace=True)
-    return df
-
-
 def import_dataset(file_dir):
+    """
+    Import dataset from a file.
+    Removes "#" character and spacing from column labels and makes sure class labels are in the last column.
+
+    Args:
+    file_dir (str): directory of the file
+
+    Returns:
+    pandas.DataFrame: Imported dataset
+    """
+    # Read the dataset file into a pandas DataFrame
     file_dataset = pd.read_csv(file_dir, delimiter="\t|,", engine="python")
     # Remove the "#" character from each column label
     file_dataset.columns = [col.replace('#', '') for col in file_dataset.columns]
@@ -38,6 +38,15 @@ def import_dataset(file_dir):
 
 
 def real_ls_copy(list_origin):
+    """
+    Creates a deep copy of a given list.
+
+    Args:
+    list_origin (list): The list to be deeply copied.
+
+    Returns:
+    list: A deep copy of the original list.
+    """
     new_list = []
     for val in list_origin:
         if isinstance(val, list):
@@ -48,6 +57,16 @@ def real_ls_copy(list_origin):
 
 
 def normalize(x_train, x_test):
+    """
+    Normalizes the features in the training and test data.
+
+    Args:
+    x_train (array-like): The training data.
+    x_test (array-like): The test data.
+
+    Returns:
+    tuple: Normalized versions of the training and test data.
+    """
     train_copy = real_ls_copy(x_train)
     test_copy = real_ls_copy(x_test)
     num_features = len(train_copy[0])
@@ -83,6 +102,15 @@ def normalize(x_train, x_test):
 
 
 def a_attri_class_split(shuffled_dataset):
+    """
+    Splits a dataset into attributes and labels.
+
+    Args:
+    shuffled_dataset (array-like): The input dataset.
+
+    Returns:
+    tuple: The attributes and labels as separate lists.
+    """
     shuffled_dataset = shuffled_dataset.values.tolist()
     x_dataset = real_ls_copy(shuffled_dataset)
     y_dataset = []
@@ -93,11 +121,31 @@ def a_attri_class_split(shuffled_dataset):
 
 
 def b_rand_partition(x_dataset, y_dataset):
+    """
+    Partitions the data into training and testing sets with a split of 80:20.
+
+    Args:
+    x_dataset (array-like): The feature data.
+    y_dataset (array-like): The labels.
+
+    Returns:
+    tuple: The partitioned data.
+    """
     x_train_set_80, x_test_set_20, y_train_set_80, y_test_set_20 = train_test_split(x_dataset, y_dataset, test_size=0.2)
     return x_train_set_80, x_test_set_20, y_train_set_80, y_test_set_20
 
 
 def de_calculate_accuracy(y_data, y_pred_data):
+    """
+    Calculates the accuracy of predictions.
+
+    Args:
+    y_data (array-like): The true labels.
+    y_pred_data (array-like): The predicted labels.
+
+    Returns:
+    float: The accuracy of the predictions.
+    """
     correct = 0
     for i in range(0, len(y_data)):
         if y_data[i] == y_pred_data[i]:
@@ -106,6 +154,15 @@ def de_calculate_accuracy(y_data, y_pred_data):
 
 
 def SCV_accuracy(dataset, training, normalized, algorithm, simple, ntree, kNN, kNNk, rnc, Ensemble, radius):
+    """
+    Calculates the performance of the Stratified Cross Validation (SCV).
+
+    Args:
+    Various parameters related to the dataset, the algorithm, and the model's hyperparameters.
+
+    Returns:
+    float: The performance of the SCV.
+    """
     dataset_copy = dataset.copy()
     labels = dataset_copy.columns.tolist()
     labels = labels[0: len(labels) - 1]
@@ -135,6 +192,15 @@ def SCV_accuracy(dataset, training, normalized, algorithm, simple, ntree, kNN, k
 
 
 def k_NN_avg_std_accuracies(dataset, training, normalized, algorithm, simple, ntree, kNN, kNNk, rnc, Ensemble, radius):
+    """
+    Calculates average and standard deviation of accuracies for different values of k in k-Nearest Neighbors (k-NN).
+
+    Args:
+    Various parameters related to the dataset, the algorithm, and the model's hyperparameters.
+
+    Returns:
+    tuple: Lists of accuracies, standard deviations of accuracies, f1_scores, standard deviations of f1_scores.
+    """
     dataset_copy = dataset.copy()
     # Q1.2
     accuracies = []
@@ -153,13 +219,22 @@ def k_NN_avg_std_accuracies(dataset, training, normalized, algorithm, simple, nt
 
 
 def RNC_avg_std_accuracies(dataset, training, normalized, algorithm, simple, ntree, kNN, kNNk, rnc, Ensemble, radius):
+    """
+    Similar to the above function, but for Radius Neighbors Classifier (RNC).
+
+    Args:
+    Various parameters related to the dataset, the algorithm, and the model's hyperparameters.
+
+    Returns:
+    tuple: Lists of accuracies, standard deviations of accuracies, f1_scores, standard deviations of f1_scores.
+    """
     dataset_copy = dataset.copy()
     # Q1.2
     accuracies = []
     std_accuracies = []
     f1_scores = []
     std_f1_scores = []
-    #for k in range(6, 151, 9):
+    # for k in range(6, 151, 9):
     for k in range(1, 100, 9):
         accuracy, std_accuracy, precision, std_precision, recall, \
             std_recall, f1_score, std_f1_score = SCV_accuracy(dataset, False, True, algorithm, simple, ntree, kNN, round(k*0.01, 2), rnc, Ensemble, radius)
@@ -170,8 +245,20 @@ def RNC_avg_std_accuracies(dataset, training, normalized, algorithm, simple, ntr
 
     return accuracies, std_accuracies, f1_scores, std_f1_scores
 
+
 def run_SCV(algorithm, simple, file_dir, name, kNN, kNNk, rnc, Ensemble, radius):
+    """
+    Runs the entire pipeline of loading the data, running the classifier, and printing the results.
+
+    Args:
+    Various parameters related to the algorithm, the directory of data, and model hyperparameters.
+
+    Returns:
+    None.
+    """
+    # Import dataset from given file directory
     dataset = import_dataset(file_dir)
+    # Check if only the Random Forrest method is used
     if not kNN and not rnc and not Ensemble:
         ntrees = [1, 5, 10, 20, 30, 40, 50]
         accuracies = []
@@ -225,6 +312,8 @@ def run_SCV(algorithm, simple, file_dir, name, kNN, kNNk, rnc, Ensemble, radius)
         # Set the x-axis tick labels
         ax_f1_score.set_xticks(ntrees)
         ax_f1_score.set_xticklabels(ntrees)
+
+    # Check if only k-Nearest Neighbors (kNN) method is used
     if kNN and not rnc and not Ensemble:
         accuracies, std_accuracies, f1_scores, std_f1_scores = k_NN_avg_std_accuracies(dataset, True, True, algorithm, simple, 1, kNN, kNNk, rnc, Ensemble, radius)
         k_vals = [x for x in range(1, 52, 2)]
@@ -257,6 +346,8 @@ def run_SCV(algorithm, simple, file_dir, name, kNN, kNNk, rnc, Ensemble, radius)
         # Set the x-axis tick labels
         ax_f1_score.set_xticks(k_vals)
         ax_f1_score.set_xticklabels(k_vals)
+
+    # Check if only Radius Neighbors Classifier (rnc) method is used
     if rnc and not Ensemble:
         accuracies, std_accuracies, f1_scores, std_f1_scores = RNC_avg_std_accuracies(dataset, True, True, algorithm,
                                                                                        simple, 1, kNN, kNNk, rnc, Ensemble, radius)
@@ -292,6 +383,7 @@ def run_SCV(algorithm, simple, file_dir, name, kNN, kNNk, rnc, Ensemble, radius)
         ax_f1_score.set_xticks(k_vals)
         ax_f1_score.set_xticklabels(k_vals)
 
+    # Check if Ensemble method is used
     if Ensemble:
         ntrees = [1, 5, 10, 20, 30]
         #ntrees = [1]
@@ -360,11 +452,11 @@ if __name__ == '__main__':
     # Please only put a list in k for KNN and radius for Ensemble
 
     # Random Forrest
-    run_SCV("InfoGain", "yes", "diabetes.csv", "Diabetes", False, 1, False, False, 2)
-    run_SCV("InfoGain", "yes", "contraceptive_method.csv", "Contraceptive", False, 1, False, False, 2)
+    #run_SCV("InfoGain", "yes", "diabetes.csv", "Diabetes", False, 1, False, False, 2)
+    #run_SCV("InfoGain", "yes", "contraceptive_method.csv", "Contraceptive", False, 1, False, False, 2)
 
     # kNN
-    #run_SCV("InfoGain", "yes", "diabetes.csv", "Diabetes", True, 1, False, False, 2)
+    run_SCV("InfoGain", "yes", "diabetes.csv", "Diabetes", True, 1, False, False, 2)
     #run_SCV("InfoGain", "yes", "contraceptive_method.csv", "Contraceptive", True, 1, False, False, 2)
 
     # RadiusNeighborsClassifier

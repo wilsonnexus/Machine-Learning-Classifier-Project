@@ -1,18 +1,45 @@
 # Author: Wilson Neira
-# Evaluating the Decision Tree Algorithm
+
 import pandas as pd
 import numpy as np
 
-""" Decision Tree (DT) Algorithm Begins Here"""
+
 class DecisionTree:
+    """
+    A class for implementing a Decision Tree algorithm.
+
+    Args:
+    data_train (list): List of training data.
+    labels (list): List of labels for the features.
+    algorithm (str): The type of algorithm to use for splitting (either "InfoGain" or "Gini").
+    simple (bool): Indicator to decide if it's a simple decision tree.
+    RF (bool): Indicator to decide if it's used in Random Forests.
+
+    Attributes:
+    data_train (list): List of training data.
+    labels (list): List of labels for the features.
+    algorithm (str): The type of algorithm to use for splitting (either "InfoGain" or "Gini").
+    simple (bool): Indicator to decide if it's a simple decision tree.
+    RF (bool): Indicator to decide if it's used in Random Forests.
+    """
     class Node:
+        """
+        A class for the node in a decision tree.
+
+        Args:
+        label (str): The label of the node.
+        node_type (str): Type of the node ("decision" or "leaf").
+
+        Attributes:
+        label (str): The label of the node.
+        node_type (str): Type of the node ("decision" or "leaf").
+        """
         node_type = ""
         label = None
         testlabel = ""
         edge = {}
         majority = -1
         threshold = -1
-        #depth_tracker = 0
         depth = 0
         parent = None
         def __init__(self, label, node_type):
@@ -20,6 +47,12 @@ class DecisionTree:
             self.node_type = node_type
 
         def curr_depth(self):
+            """
+            Get the depth of the current node in the decision tree.
+
+            Returns:
+            The depth of the current node in the decision tree.
+            """
             node = self
             while node.parent is not None:
                 self.depth += 1
@@ -27,6 +60,9 @@ class DecisionTree:
             return self.depth
 
     def __init__(self, data_train, labels, algorithm, simple, RF = True):
+        """
+        Initialize a DecisionTree.
+        """
         self.labels = labels
         self.RF = RF
         self.algorithm = algorithm
@@ -36,6 +72,16 @@ class DecisionTree:
         self.root = self.build_tree(data_train, y)
 
     def build_tree(self, X, y):
+        """
+        Build the decision tree.
+
+        Parameters:
+        X : The feature data.
+        y : The labels.
+
+        Returns:
+        The root node of the built decision tree.
+        """
         X_copy = X.copy()
         # m ≈ √X mechanism to select m attributes at random from the complete set of attributes
         if self.RF and len(self.labels) != 0:
@@ -46,7 +92,6 @@ class DecisionTree:
             X_copy = pd.concat([X_copy[selected_columns], X_copy['class']], axis=1)
 
         y = X.iloc[:, -1]
-        #X_copy = X_copy.iloc[:, :-1]
 
         y = pd.DataFrame(y, columns=["class"])
         node = self.Node(label=-1, node_type="decision")
@@ -114,7 +159,6 @@ class DecisionTree:
         sub_data = []
         Dv_df = []
         if max_A.isdigit():
-        #if pd.api.types.is_numeric_dtype(X_copy[max_A]):
             X_copy_sorted = (X_copy.sort_values(max_A).reset_index(drop=True)).copy()
             split = 0
             for v in X_copy_sorted[max_A]:
@@ -122,9 +166,6 @@ class DecisionTree:
                     break
                 else:
                     split +=1
-            #Dv_df = []#Missing code translation here
-            #Dv_df.append(X_copy_sorted.iloc[:split, :])
-            #Dv_df.append(X_copy_sorted.iloc[split:, :])
             y = X_copy_sorted.iloc[:, -1]
             y = pd.DataFrame(y, columns=["class"])
             Dv_left = X_copy_sorted.iloc[:split, :]
@@ -151,10 +192,9 @@ class DecisionTree:
         for sub_v in sub_data:
             if sub_v.size == 0:
                 node.node_type = "leaf"
-                node.label = node.majority#Dv['class'].mode()[0]
+                node.label = node.majority
                 node.threshold = threshold
                 return node
-            # maximal depth stopping criterion
             if node.curr_depth() + 1 > 10:
                 node.node_type = "leaf"
                 node.label = y['class'].mode()[0]
@@ -164,10 +204,8 @@ class DecisionTree:
             y = sub_v.iloc[:, -1]
             y = pd.DataFrame(y, columns=["class"])
             T = self.build_tree(sub_v, y)
-            #T.depth_tracker +=1
             T.parent = node
             if max_A.isdigit():
-            #if pd.api.types.is_numeric_dtype(X_copy[max_A]):
                 A_val = "<=" if i_data == 0 else ">"
             else:
                 A_val = V[i_data]
@@ -177,7 +215,15 @@ class DecisionTree:
         return node
 
     def entropy(self, data):
-        #Check that values are mathematically correct here
+        """
+        Calculate the entropy of the given data.
+
+        Parameters:
+        data : The data to calculate entropy.
+
+        Returns:
+        The entropy of the data.
+        """
         data_copy = data.copy()
         total_entropy = 0
         n = len(data_copy)
@@ -194,10 +240,19 @@ class DecisionTree:
         return total_entropy
 
     def information_gain(self, x_train, label):
+        """
+        Calculate the information gain and the best threshold for splitting data based on a given attribute.
+
+        Parameters:
+        x_train : The training data.
+        label : The attribute label.
+
+        Returns:
+        The information gain and the best threshold.
+        """
         threshold_curr = -1
         x_train_copy = x_train.copy()
         x_train_entropy = self.entropy(x_train_copy)
-        #label_data = (x_train_copy[[label, 'class']]).sort_values(label).reset_index(drop=True)
         is_numeric = pd.api.types.is_numeric_dtype(x_train_copy[label])
         if is_numeric:
             label_data = x_train_copy[[label, 'class']].sort_values(label).reset_index(drop=True)
@@ -205,35 +260,16 @@ class DecisionTree:
             label_data = x_train_copy[[label, 'class']].sort_values(label, key=lambda col: col.astype(str)).reset_index(
                 drop=True)
         n = label_data.shape[0]
-        #avg_entropy = 0
         min_entropy = float('inf')
         best_threshold= None
-        """threshold_curr = -1
-                x_train_copy = x_train.copy()
-                x_train_entropy = self.entropy(x_train_copy)
-                label_data = x_train_copy[[label, 'class']]
-                label_data[label] = pd.to_numeric(label_data[label])
-                label_data = label_data.sort_values(label).reset_index(drop=True)
-                n = label_data.shape[0]
-                min_entropy = float('inf')
-                best_threshold = None
-                if label_data[label].dtype == np.number:"""
         if label.isdigit():
-        #if pd.api.types.is_numeric_dtype(x_train_copy[label]):
-
-            #threshold_curr = (label_data.at[1, label] + label_data.at[0, label])/2
-            #v = 1
-            #while v < len(label_data):
             thresholds = []
             unique_vals = label_data[label].unique()
             sorted_vals = np.sort(unique_vals)
             for i in range(len(sorted_vals) - 1):
                 thresholds.append((sorted_vals[i] + sorted_vals[i + 1]) / 2)
 
-            #min_entropy = float('inf')
-            #best_threshold = None
             for threshold_curr in thresholds:
-                #threshold_curr = (label_data.at[v, label] + label_data.at[v-1, label])/2
                 decisions = [label_data[label_data[label] <= threshold_curr],
                              label_data[label_data[label] > threshold_curr]]
                 avg_entropy = 0 #Delete this if the code does not work
@@ -243,9 +279,7 @@ class DecisionTree:
                 if avg_entropy < min_entropy:
                     min_entropy = avg_entropy
                     best_threshold = threshold_curr
-                #v += 1
         else:
-            #V = (label_data[label].unique()).copy()
             V = label_data[label].unique()
             for v in V:
                 decision = label_data.loc[label_data[label] == v]
@@ -257,6 +291,15 @@ class DecisionTree:
         return (x_train_entropy - min_entropy), best_threshold
 
     def gini(self, data):
+        """
+        Calculate the Gini Index of the given data.
+
+        Parameters:
+        data : The data to calculate the Gini Index.
+
+        Returns:
+        The Gini Index of the data.
+        """
         data_copy = data.copy()
         total_gini = 0
         n = len(data_copy)
@@ -272,6 +315,16 @@ class DecisionTree:
         return total_gini
 
     def gini_gain(self, x_train, label):
+        """
+        Calculate the Gini Gain and the best threshold for splitting data based on a given attribute.
+
+        Parameters:
+        x_train : The training data.
+        label : The attribute label.
+
+        Returns:
+        The Gini Gain and the best threshold.
+        """
         x_train_copy = x_train.copy()
         x_train_gini = self.gini(x_train_copy)
         label_data = x_train_copy[[label, 'class']].sort_values(label).reset_index(drop=True)
@@ -280,7 +333,6 @@ class DecisionTree:
         best_threshold = None
 
         if label.isdigit():
-        #if pd.api.types.is_numeric_dtype(x_train_copy[label]):
             thresholds = []
             unique_vals = label_data[label].unique()
             sorted_vals = np.sort(unique_vals)
@@ -308,14 +360,22 @@ class DecisionTree:
                     best_threshold = None
         return x_train_gini - min_gini, best_threshold
 
-
     def predict(self, DT, X_test):
+        """
+        Predict the class for a given test instance.
+
+        Parameters:
+        DT : The decision tree to use for prediction.
+        X_test : The test instance.
+
+        Returns:
+        The predicted class for the test instance.
+        """
         predict = DT.majority
         if DT.node_type == 'leaf':
             predict = DT.label
             return predict
         if DT.testlabel.isdigit():
-        #if pd.api.types.is_numeric_dtype(X_test[DT.testlabel]):
             if X_test.loc[DT.testlabel]<= DT.threshold:
                 nextDT = DT.edge['<=']
             else:
@@ -327,6 +387,16 @@ class DecisionTree:
         return self.predict(nextDT, X_test)
 
     def test(self, data, DT):
+        """
+        Test the decision tree on the given dataset.
+
+        Parameters:
+        data : The dataset to test.
+        DT : The decision tree to use for testing.
+
+        Returns:
+        The predicted classes for each instance in the dataset.
+        """
         predictions = []
         for index, ins in data.iterrows():
             predictions.append(self.predict(DT, ins))

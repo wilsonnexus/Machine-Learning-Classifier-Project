@@ -1,28 +1,23 @@
 # Author: Wilson Neira
-# Evaluating the k-NN Algorithm
-# Evaluating the Decision Tree Algorithm
-import sklearn
-from sklearn.model_selection import train_test_split
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
 
-""" k-Nearest Neighbors (k-NN) Algorithm Begins Here"""
 class c_k_NN_algorithm:
-
     """
     A class for implementing the k-Nearest Neighbor algorithm.
+
+    Args:
+    x_train (list): List of training data features.
+    y_train (list): List of training data labels.
+    k (int): Number of neighbors to consider for k-NN.
+
+    Attributes:
+    x_train (list): List of training data features.
+    y_train (list): List of training data labels.
+    k (int): Number of neighbors to consider for k-NN.
     """
 
     def __init__(self, x_train, y_train, k):
         """
-        Train the data.
-
-        :param x_train: Training data features.
-        :param y_train: Training data labels.
-        :param k (int): Number of considered neighbors
-
-        :return: None
+        Constructor to initialize training data features, labels, and number of neighbors.
         """
         self.x_train = x_train
         self.y_train = y_train
@@ -30,9 +25,13 @@ class c_k_NN_algorithm:
 
     def euclidean_distance(self, x_test):
         """
-        Caclulate euclidean distance between training and testing data.
-        :param x_test (list): Test data features.
-        :return test_dists (list): List of euclidean distances between training and testing data.
+        Calculate Euclidean distance between training and testing data.
+
+        Args:
+        x_test (list): List of test data features.
+
+        Returns:
+        list: List of Euclidean distances between each test sample and all training samples.
         """
         test_dists = []
         for i in range(len(x_test)):
@@ -44,9 +43,13 @@ class c_k_NN_algorithm:
 
     def test(self, x_test):
         """
-        Test the data.
-        :param x_test (list): Test data features.
-        :return y_test_pred (list): List od predicted labels for the test data.
+        Test the model on the test data and make predictions.
+
+        Args:
+        x_test (list): List of test data features.
+
+        Returns:
+        list: List of predicted labels for the test data.
         """
         y_test_pred = []
         test_dists = self.euclidean_distance(x_test)  # Find Euclidean Distance between training and test data

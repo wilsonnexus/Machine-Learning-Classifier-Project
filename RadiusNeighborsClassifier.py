@@ -1,17 +1,23 @@
+# Author: Wilson Neira
+
 class RadiusNeighborsClassifier:
     """
     A class for implementing the Radius Neighbors algorithm.
+
+    Args:
+    x_train (list): List of training data features.
+    y_train (list): List of training data labels.
+    radius (float): The radius within which to look for neighbors.
+
+    Attributes:
+    x_train (list): List of training data features.
+    y_train (list): List of training data labels.
+    radius (float): The radius within which to look for neighbors.
     """
 
     def __init__(self, x_train, y_train, radius):
         """
-        Train the data.
-
-        :param x_train: Training data features.
-        :param y_train: Training data labels.
-        :param radius (float): The radius within which to look for neighbors
-
-        :return: None
+        Constructor to initialize training data features, labels, and radius.
         """
         self.x_train = x_train
         self.y_train = y_train
@@ -19,9 +25,13 @@ class RadiusNeighborsClassifier:
 
     def euclidean_distance(self, x_test):
         """
-        Calculate euclidean distance between training and testing data.
-        :param x_test (list): Test data features.
-        :return test_dists (list): List of euclidean distances between training and testing data.
+        Calculate Euclidean distance between training and testing data.
+
+        Args:
+        x_test (list): List of test data features.
+
+        Returns:
+        list: List of Euclidean distances between each test sample and all training samples.
         """
         test_dists = []
         for i in range(len(x_test)):
@@ -33,9 +43,13 @@ class RadiusNeighborsClassifier:
 
     def test(self, x_test):
         """
-        Test the data.
-        :param x_test (list): Test data features.
-        :return y_test_pred (list): List of predicted labels for the test data.
+        Test the model on the test data and make predictions.
+
+        Args:
+        x_test (list): List of test data features.
+
+        Returns:
+        list: List of predicted labels for the test data.
         """
         y_test_pred = []
         test_dists = self.euclidean_distance(x_test)  # Find Euclidean Distance between training and test data

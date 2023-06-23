@@ -1,19 +1,43 @@
 # Author: Wilson Neira
-# Evaluating the Decision Tree Algorithm
+
+import pandas as pd
+import numpy as np
 import ensemble
 from kNN import *
 from RadiusNeighborsClassifier import *
 
+
 class StratifiedCrossValidation:
     """
-        A class for implementing the Stratified Cross Validation algorithm.
+    A class for implementing the Stratified Cross Validation algorithm.
+
+    Args:
+    s_data_train (pandas.DataFrame): The training data.
+    c_labels (list): The labels.
+    criteria (object): The criteria to be used for decision making.
+    simple (bool): Specifies if the model should be a simple or complex one.
+    weak_learn (object): The weak learning model.
+    bagging (object): The bagging model.
+    ntree (int): Number of trees for the ensemble learning algorithm.
+    F (int): Specifies the number of features to consider when looking for the best split.
+    k (int): Number of folds in the cross validation.
+    kNN (bool): Specifies if the k-Nearest Neighbors model should be used.
+    kNNk (int): Specifies the number of neighbors to include in the majority voting process for k-NN.
+    RNC (bool): Specifies if the Radius Neighbors Classifier model should be used.
+    Ensemble (bool): Specifies if the Ensemble model should be used.
+    radius (float): The range in which to search for the neighbors for RNC.
+
+    Attributes:
+    performance (tuple): The performance metrics of the model. Includes average accuracy, standard deviation of accuracy,
+                         average precision, standard deviation of precision, average recall, standard deviation of recall,
+                         average f1_score, standard deviation of f1_score.
     """
-    def __init__(self, S_data_train, C_labels, criteria, simple, WeakLearn, Bagging, ntree, F, k, kNN, kNNk, RNC, Ensemble, radius):
-        self.C_labels = C_labels
+    def __init__(self, s_data_train, c_labels, criteria, simple, weak_learn, bagging, ntree, F, k, kNN, kNNk, RNC, Ensemble, radius):
+        self.c_labels = c_labels
         self.criteria = criteria
         self.simple = simple
-        self.WeakLearn = WeakLearn
-        self.Bagging = Bagging
+        self.weak_learn = weak_learn
+        self.bagging = bagging
         self.ntree = ntree
         self.F = F
         self.k = k
@@ -22,11 +46,21 @@ class StratifiedCrossValidation:
         self.RNC = RNC
         self.radius = radius
         self.Ensemble = Ensemble
-        C_y = S_data_train.iloc[:, -1]
+        C_y = s_data_train.iloc[:, -1]
         C_y = pd.DataFrame(C_y, columns=["class"])
-        self.performance = self.cross_validation(S_data_train, C_y)
+        self.performance = self.cross_validation(s_data_train, C_y)
 
     def cross_validation(self, S, C):
+        """
+        Executes the Stratified Cross Validation.
+
+        Args:
+        S (pandas.DataFrame): The shuffled DataFrame.
+        C (pandas.DataFrame): The labels.
+
+        Returns:
+        tuple: Average and standard deviation of accuracy, precision, recall and f1_score.
+        """
         S_copy = S.copy()
         # Shuffle the DataFrame randomly
         S_shuffled = S.sample(frac=1, random_state=42)
@@ -67,12 +101,12 @@ class StratifiedCrossValidation:
                 predictions = RF.test(test_list)
             elif self.Ensemble:
                 # Train and test multi-algorithm Ensembler
-                RF = ensemble.Ensemble(folds_train, self.C_labels, self.criteria, self.simple, self.WeakLearn, self.ntree,
+                RF = ensemble.Ensemble(folds_train, self.c_labels, self.criteria, self.simple, self.weak_learn, self.ntree,
                                   self.F, self.kNN, self.kNNk, self.radius)
                 predictions = RF.test(fold_test)
             else:
                 # Train and test Random Forests
-                RF = self.Bagging(folds_train, self.C_labels, self.criteria, self.simple, self.WeakLearn, self.ntree, self.F, self.kNN, self.kNNk)
+                RF = self.bagging(folds_train, self.c_labels, self.criteria, self.simple, self.weak_learn, self.ntree, self.F, self.kNN, self.kNNk)
                 predictions = RF.test(fold_test)
             accuracy_macro, precision_macro, recall_macro, f1_score_macro = self.model_performance(fold_test_class, predictions)
             models_accuracy.append(accuracy_macro)
@@ -86,6 +120,16 @@ class StratifiedCrossValidation:
             sum(models_f1_score)/len(models_f1_score), np.std(models_f1_score)
 
     def create_folds(self, S, C):
+        """
+        Creates k folds from the DataFrame S.
+
+        Args:
+        S (pandas.DataFrame): The shuffled DataFrame.
+        C (pandas.DataFrame): The labels.
+
+        Returns:
+        list: List of folds, each fold being a DataFrame.
+        """
         # Compute the class distribution
         class_dist = S['class'].value_counts(normalize=True)
         # Compute the number of samples per fold for each class
@@ -107,6 +151,16 @@ class StratifiedCrossValidation:
         return folds
 
     def model_performance(self, true_classes, predictions):
+        """
+        Computes the performance metrics (accuracy, precision, recall, f1_score) for the model.
+
+        Args:
+        true_classes (list): The true labels.
+        predictions (list): The predicted labels.
+
+        Returns:
+        tuple: Average of accuracy, precision, recall and f1_score.
+        """
         unique_classes = sorted(set(true_classes))
         num_classes = len(unique_classes)
 
