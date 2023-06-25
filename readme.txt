@@ -5,3 +5,5 @@ There is Random Forests, kNN, RadiusNeighborsClassifier, and Ensemble of the pre
 For all datasets I used stratified cross validation. 
 
 For the random forrest I implemented in addition to the original, to work with numrical and categorical attributes, the gini criteria, minimal size for split criterion where size is 10, minimal gain criterion where gain is 0.01, and maximal depth stopping criterion where depth is 10. 
+
+Dataset originally from: https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database?resource=download
