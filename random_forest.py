@@ -3,7 +3,7 @@
 import pandas as pd
 import sklearn
 from sklearn.model_selection import train_test_split
-import decision_tree_copy
+import decision_tree
 
 
 class RandomForest:
@@ -61,7 +61,7 @@ class RandomForest:
                 boot_X = [row[:-1] for row in boot_list]
                 ensemble.append(self.WeakLearn(boot_X, boot_y, self.kNNk))
             else:
-                ensemble.append(decision_tree_copy.DecisionTree(bootstrap.copy(), self.C_labels.copy(), self.criteria, self.simple))
+                ensemble.append(decision_tree.DecisionTree(bootstrap.copy(), self.C_labels.copy(), self.criteria, self.simple))
 
         return ensemble
 

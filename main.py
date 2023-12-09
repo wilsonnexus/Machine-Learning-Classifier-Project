@@ -3,13 +3,13 @@
 
 # Import necessary libraries and modules
 import matplotlib.pyplot as plt
-from random_forest import *
-from stratified_cross_validation import *
-from decision_tree_copy import *
-
-
 import pandas as pd
 import numpy as np
+
+from random_forest import *
+from stratified_cross_validation import *
+from decision_tree import *
+from sklearn import datasets
 
 
 def import_dataset(file_dir):
@@ -24,6 +24,12 @@ def import_dataset(file_dir):
     pandas.DataFrame: Imported dataset
     """
     # Read the dataset file into a pandas DataFrame
+    if file_dir == "digits.csv":
+        digits = datasets.load_digits()
+        file_dataset = pd.DataFrame(digits.data, columns=digits.feature_names)
+        file_dataset['class'] = digits.target
+    else:
+        file_dataset = pd.read_csv(file_dir, delimiter="\t|,", engine="python")
     file_dataset = pd.read_csv(file_dir, delimiter="\t|,", engine="python")
     # Remove the "#" character from each column label
     file_dataset.columns = [col.replace('#', '') for col in file_dataset.columns]
@@ -452,19 +458,24 @@ if __name__ == '__main__':
     # Please only put a list in k for KNN and radius for Ensemble
 
     # Random Forrest
-    #run_SCV("InfoGain", "yes", "diabetes.csv", "Diabetes", False, 1, False, False, 2)
-    #run_SCV("InfoGain", "yes", "contraceptive_method.csv", "Contraceptive", False, 1, False, False, 2)
+    # run_SCV("InfoGain", "yes", "digits.csv", "Digits", False, 1, False, False, 2)
+    # run_SCV("Gini", "no", "digits.csv", "Digits", False, 1, False, False, 2)
+    # run_SCV("InfoGain", "yes", "diabetes.csv", "Diabetes", False, 1, False, False, 2)
+    # run_SCV("InfoGain", "yes", "contraceptive_method.csv", "Contraceptive", False, 1, False, False, 2)
 
     # kNN
-    run_SCV("InfoGain", "yes", "diabetes.csv", "Diabetes", True, 1, False, False, 2)
-    #run_SCV("InfoGain", "yes", "contraceptive_method.csv", "Contraceptive", True, 1, False, False, 2)
+    run_SCV("InfoGain", "yes", "digits.csv", "Digits", True, 1, False, False, 2)
+    # run_SCV("InfoGain", "yes", "diabetes.csv", "Diabetes", True, 1, False, False, 2)
+    # run_SCV("InfoGain", "yes", "contraceptive_method.csv", "Contraceptive", True, 1, False, False, 2)
 
     # RadiusNeighborsClassifier
+    # run_SCV("InfoGain", "yes", "digits.csv", "Digits", True, 1, False, False, 2)
     # run_SCV("InfoGain", "yes", "diabetes.csv", "Diabetes", True, 1, False, False, 2)
     # run_SCV("InfoGain", "yes", "contraceptive_method.csv", "Contraceptive", True, 1, False, False, 2)
 
     # Ensemble
-    #run_SCV("InfoGain", "yes", "diabetes.csv", "Diabetes", False, [1, 2], False, True, [1.5, 1.41])
+    # run_SCV("InfoGain", "yes", "digits.csv", "Digits", False, [1, 2], False, True, [1.5, 1.41])
+    # run_SCV("InfoGain", "yes", "diabetes.csv", "Diabetes", False, [1, 2], False, True, [1.5, 1.41])
     # run_SCV("InfoGain", "yes", "contraceptive_method.csv", "Contraceptive", False, [1, 2], False, True, [1.5, 1.41])
 
 
